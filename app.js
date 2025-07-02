@@ -18,6 +18,49 @@ function saveState() {
   if (history.length > 50) history.shift(); // Limit history size
 }
 
+// --- Touch event support start ---
+function getTouchPos(canvas, touchEvent) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: touchEvent.touches[0].clientX - rect.left,
+    y: touchEvent.touches[0].clientY - rect.top
+  };
+}
+
+canvas.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  const pos = getTouchPos(canvas, e);
+  drawing = true;
+  [lastX, lastY] = [pos.x, pos.y];
+  saveState();
+});
+
+canvas.addEventListener('touchmove', (e) => {
+  if (!drawing) return;
+  e.preventDefault();
+  const pos = getTouchPos(canvas, e);
+  ctx.strokeStyle = brushColor;
+  ctx.lineWidth = brushWidth;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  ctx.moveTo(lastX, lastY);
+  ctx.lineTo(pos.x, pos.y);
+  ctx.stroke();
+  [lastX, lastY] = [pos.x, pos.y];
+});
+
+canvas.addEventListener('touchend', (e) => {
+  e.preventDefault();
+  drawing = false;
+});
+
+canvas.addEventListener('touchcancel', (e) => {
+  e.preventDefault();
+  drawing = false;
+});
+// --- Touch event support end ---
+
 canvas.addEventListener('mousedown', (e) => {
   drawing = true;
   [lastX, lastY] = [e.offsetX, e.offsetY];
